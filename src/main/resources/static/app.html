@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html data-theme="light">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Hello World App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"/>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/fontawesome.min.css"
+          integrity="sha384-BY+fdrpOd3gfeRvTSMT+VUZmA728cfF9Z2G42xpaRkUGu2i3DyzpTURDo5A6CaLK" crossorigin="anonymous"/>
+</head>
+<body hx-ext="causeway-client-htmx-ro-spec,client-side-templates,loading-states" class="container">
+<header>
+    <nav>
+        <ul>
+            Hello World App
+        </ul>
+        <ul>
+            <li></li>
+        </ul>
+        <ul>
+            <li>
+                <a href="#" _="on click js
+                        return Mustache.render(document.getElementById('template_hello_HelloWorldObjects_listAll_invoke').innerHTML, '{}') end
+                        then put it into <main/>
+                        then js htmx.process('main') end">
+                    List All
+                </a>
+            </li>
+            <li>
+                <a href="#" _="on click js
+                        return Mustache.render(document.getElementById('template_hello_HelloWorldObjects_create_invoke').innerHTML, '{}') end
+                        then put it into <main/>
+                        then js htmx.process('main') end">
+                    Create
+                </a>
+            </li>
+            <li><a href="restful/" target="_blank">Login</a>
+        </ul>
+    </nav>
+    <hr/>
+</header>
+<main>
+
+</main>
+<footer>
+    <hr/>
+    <small>
+        <div class="grid">
+            <div>Built with :</div>
+            <div><a href="https://htmx.org/" target="_blank">HTMX</a></div>
+            <div><a href="https://hyperscript.org/" target="_blank">Hyperscript</a></div>
+            <div><a href="https://picocss.com/" target="_blank">Pico.css</a></div>
+            <div><a href="https://github.com/janl/mustache.js#variables" target="_blank">Mustache</a></div>
+        </div>
+    </small>
+</footer>
+<script id="template_hello_HelloWorldObjects_listAll_invoke" type="x-tmpl-mustache">
+    <div hx-get="/restful/services/hello.HelloWorldObjects/actions/listAll/invoke"
+                       success-template="template_hello_HelloWorldObjects_listAll"
+                       hx-target="#section_hello_HelloWorldObjects_listAll"
+                       hx-trigger="revealed"
+                       >
+
+                       <section id="section_hello_HelloWorldObjects_listAll" data-loading-aria-busy>
+                            No Objects found
+                       </section>
+    </div>
+</script>
+<script id="template_hello_HelloWorldObjects_listAll" type="x-tmpl-mustache">
+    <article>
+        <table>
+             <thead>
+             <tr>
+                 <th scope="col">Name</th>
+                 <th scope="col">Remove</th>
+             </tr>
+             </thead>
+             <tbody>
+             {{#.}}
+             <tr>
+                 <td>{{name}}</td>
+                 <td>
+                     <button
+                         hx-get="{{$$href}}/actions/delete"
+                         success-template="template_hello_HelloWorldObject_delete"
+                         hx-target='footer' >Delete</button>
+                 </td>
+             </tr>
+             {{/.}}
+             </tbody>
+         </table>
+    </article>
+</script>
+<script id="template_hello_HelloWorldObject_delete" type="x-tmpl-mustache">
+    <dialog open>
+      <article>
+        <header>
+          <a href="#close" aria-label="Close" class="close"  _="on click remove @open from closest <dialog/> "></a>
+          Confirm your action!
+        </header>
+        <p>
+            Are you sure want to delete this?
+        </p>
+         <footer>
+          <a href="#cancel"
+            role="button"
+            class="secondary"
+            _="on click remove @open from closest <dialog/> ">
+            Cancel
+          </a>
+          <a href="#confirm"
+            role="button"
+            hx-post="{{links.2.href}}" hx-target='footer'
+            success-template="template_hello_HelloWorldObjects_listAll"
+            hx-target="#section_hello_HelloWorldObjects_listAll"
+            _="on htmx:afterRequest remove @open from closest <dialog/> ">
+            Confirm
+          </a>
+        </footer>
+      </article>
+    </dialog>
+</script>
+<script id="template_hello_HelloWorldObjects_create_invoke" type="x-tmpl-mustache">
+    <article hx-get="/restful/services/hello.HelloWorldObjects/actions/create"
+                       success-template="template_hello_HelloWorldObjects_create"
+                       hx-target="#section_hello_HelloWorldObjects_create"
+                       hx-trigger="revealed">
+
+                       <section id="section_hello_HelloWorldObjects_create" data-loading-aria-busy>
+                       </section>
+    </article>
+</script>
+<script id="template_hello_HelloWorldObjects_create" type="x-tmpl-mustache">
+    <form hx-post="/restful/services/hello.HelloWorldObjects/actions/create/invoke"
+            success-template="template_hello_HelloWorldObjects_create_success"
+            error-template="template_hello_HelloWorldObjects_create_error"
+            invalid-template="template_hello_HelloWorldObjects_create_error"
+            error-template-target="section_hello_HelloWorldObjects_create_error"
+            >
+      <input type="text" id="name" name="name" placeholder="Object's Name" required>
+      <button type="post">
+            Create New
+      </button>
+    </form>
+     <div id="section_hello_HelloWorldObjects_create_error"></div>
+</script>
+<script id="template_hello_HelloWorldObjects_create_error" type="x-tmpl-mustache">
+    <input type="textarea" placeholder="{{message}}" aria-invalid="true">
+</script>
+<script id="template_hello_HelloWorldObjects_create_success" type="x-tmpl-mustache">
+    <section><ins>New Object created!</ins></section>
+    <form hx-post="{{$$href}}/actions/updateName/invoke"
+           success-template="template_hello_HelloWorldObjects_updateName_success"
+            error-template="template_hello_HelloWorldObjects_updateName_error" >
+       <input type="text" id="name" name="name" value="{{name}}" placeholder="Object's Name"></div>
+       <button type="post">
+             Update
+       </button>
+     </form>
+</script>
+<script id="template_hello_HelloWorldObjects_updateName_success" type="x-tmpl-mustache">
+    <section><ins>Object updated!</ins></section>
+    <form hx-post="{{$$href}}/actions/updateName/invoke">
+       <input type="text" id="name" name="name" value="{{name}}" placeholder="Object's Name"></div>
+       <button type="post">
+             Update Again
+       </button>
+     </form>
+</script>
+<script id="template_hello_HelloWorldObjects_updateName_error" type="x-tmpl-mustache">
+    <section><input type="textarea" placeholder="{{message}}" aria-invalid="true"></section>
+    <form hx-post="{{$$href}}/actions/updateName/invoke">
+       <input type="text" id="name" name="name" value="{{name}}" placeholder="Object's Name"></div>
+       <button type="post">
+             Retry Update
+       </button>
+     </form>
+</script>
+<script src="https://unpkg.com/htmx.org@1.9.9"
+        integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+        crossorigin="anonymous"></script>
+<script src="https://unpkg.com/mustache@4.2.0/mustache.js"></script>
+<script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
+<script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
+<script src="/app/causeway-client-htmx-ro-spec.js"></script>
+</body>
+</html>

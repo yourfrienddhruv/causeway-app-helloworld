@@ -74,6 +74,9 @@ server:
 spring:
   banner:
     location: banner.txt
+  devtools:
+    restart:
+      enabled: false #soft restart does-not work well with Causeway meta-data refresh, Only use reload
 
 management:
   endpoint:

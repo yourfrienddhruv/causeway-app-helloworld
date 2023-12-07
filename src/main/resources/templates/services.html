@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="services">
+    List of services
+    <table>
+        <tr th:each="sa: ${serviceAdapters}">
+            <td>
+                <a th:href="${sa.logicalTypeName}" th:text="${sa.logicalTypeName}"/>
+            </td>
+        </tr>
+    </table>
+</div>
+<div th:fragment="service">
+    Single service
+    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+</div>
+<div th:fragment="action">
+    Action
+    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+</div>
+<div th:fragment="actionResultList">
+    Action result List
+    <li th:each="p : ${actionResult.actionReturnedObject.pojo}" th:text="${p}"/>
+    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+</div>
+<div th:fragment="actionResultObject">
+    Action result Object
+    <div th:text="${actionResult.actionReturnedObject.pojo}"></div>
+    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+</div>
+<div th:fragment="actionResultEmpty">
+    Action result Empty
+    <div th:text="${actionResult.actionReturnedObject}"></div>
+    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+</div>

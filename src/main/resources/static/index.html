@@ -1,70 +1,89 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-        <title>Apache Causeway&trade; HelloWorld</title>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>Apache Causeway&trade; HelloWorld</title>
 
-        <link rel="stylesheet" type="text/css" href="css/page.css">
-    </head>
-    <body>
-        <div id="wrapper">
-            <img alt="Causeway Logo" src="images/apache-causeway/logo-banner-591x120.png" />
+    <link rel="stylesheet" type="text/css" href="css/page.css">
+</head>
+<body>
+<div id="wrapper">
+    <img alt="Causeway Logo" src="images/apache-causeway/logo-banner-591x120.png"/>
 
+    <p>
+        This is a minimal <a href="https://causeway.apache.org">Apache Causeway</a> application, intended to
+        help you understand what the framework is all about. (If you want to start building your own apps,
+        we recommend that you instead use the companion &quot;simple app&quot; as a starter template).
+        <br/>
+    </p>
+
+    <p>To access the app:</p>
+    <ul>
+        <li>
             <p>
-                This is a minimal <a href="https://causeway.apache.org">Apache Causeway</a> application, intended to
-                help you understand what the framework is all about.  (If you want to start building your own apps,
-                we recommend that you instead use the companion &quot;simple app&quot; as a starter template).
-                <br/>
+                <b><a href="wicket/">Generic UI (Wicket)</a></b>
             </p>
-
-            <p>To access the app:</p>
-            <ul>
-                <li>
-                    <p>
-                        <b><a href="wicket/">Generic UI (Wicket)</a></b>
-                    </p>
-                    <p>
-                        provides access to a generic UI for end-users.  This
-                        viewer is built with <a href="http://wicket.apache.org" target="_blank">Apache Wicket</a>&trade;.
-                    </p>
-                </li>
-                <li>
-                    <p>
-                        <b>
-                            <a href="swagger-ui/index.thtml">RESTful API (Swagger)</a>
-                        </b>
-                    </p>
-                    <p>
-                        provides access to a Swagger UI for convenient access
-                        to (a subset of) the automatically generated REST API.
-                    </p>
-                    <p>
-                        The full backend API (at <a href="restful/">restful/</a>) renders both simple and also richer
-                        hypermedia representations of domain objects, the latter conforming to the
-                        <a href="http://restfulobjects.org"  target="_blank">Restful Objects</a> spec.
-                    </p>
-                </li>
-                <li>
-                    <p>
-                        <b>
-                            <a href="app.html"  target="_blank">HTMX based Web Application</a>
-                        </b>
-                    </p>
-                    <p>
-                        provides access to a Web UI built using <a href="https://htmx.org/">HTMX</a> frontend.
-                    </p>
-                    <p>
-                        It uses same backend API (at <a href="restful/">restful/</a>) renders simple representations of domain objects.
-                        Check how HTMX aligns with hypermedia representation exposed by restful object API of causeway
-                        <a href="https://htmx.org/essays/hypermedia-driven-applications/"  target="_blank">Restful Objects</a> spec.
-                    </p>
-                </li>
-            </ul>
-
             <p>
-            The default user/password is <b><i>sven/pass</i></b>.
+                provides access to a generic UI for end-users. This
+                viewer is built with <a href="http://wicket.apache.org" target="_blank">Apache Wicket</a>&trade;.
             </p>
+        </li>
+        <li>
+            <p>
+                <b>
+                    <a href="swagger-ui/index.thtml">RESTful API (Swagger)</a>
+                </b>
+            </p>
+            <p>
+                provides access to a Swagger UI for convenient access
+                to (a subset of) the automatically generated REST API.
+            </p>
+            <p>
+                The full backend API (at <a href="restful/">restful/</a>) renders both simple and also richer
+                hypermedia representations of domain objects, the latter conforming to the
+                <a href="http://restfulobjects.org" target="_blank">Restful Objects</a> spec.
+            </p>
+        </li>
+        <li>
+            <p>
+                <b>
+                    <a href="mvc/services/" target="_blank">Spring Web MVC Application</a>
+                </b>
+            </p>
+            <p>
+                provides access to a Web MVC UI built using <a href="https://www.thymeleaf.org/">Thymeleaf</a> server
+                side rendering framework.
+            </p>
+            <p>
+                It uses url patterns of restful object API of causeway <a href="restful/">restful/</a> but instead
+                provides direct HTML representation for users to interact from browser.
+                This should serve as base for a <a href="https://hypermedia.systems/" target="_blank">Hypermedia
+                Systems</a> design.
+            </p>
+        </li>
+        <li>
+            <p>
+                <b>
+                    <a href="app.html" target="_blank">HTMX based Web Application</a>
+                </b>
+            </p>
+            <p>
+                provides access to a Web UI built using <a href="https://htmx.org/">HTMX</a> frontend.
+            </p>
+            <p>
+                It uses same backend API (at <a href="restful/">restful/</a>) renders simple representations of domain
+                objects via templates at client browser.
+                Check how HTMX aligns with hypermedia representation exposed by restful object API of causeway
+                <a href="https://htmx.org/essays/hypermedia-driven-applications/" target="_blank">Restful Objects</a>
+                spec.
+            </p>
+        </li>
+    </ul>
 
-        </div>
-    </body>
+    <p>
+        The default user/password is <b><i>sven/pass</i></b>.
+    </p>
+
+</div>
+</body>
 </html>

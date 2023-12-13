@@ -1,35 +1,67 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
+<hr>
 <div th:fragment="services">
     List of services
+    <hr>
     <table>
         <tr th:each="sa: ${serviceAdapters}">
             <td>
-                <a th:href="${sa.logicalTypeName}" th:text="${sa.logicalTypeName}"/>
+                <a th:href="${sa.logicalTypeName} + '/'" th:text="${sa.logicalTypeName}"/>
             </td>
         </tr>
     </table>
 </div>
+<hr>
 <div th:fragment="service">
     Single service
-    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+    <hr>
+    <div th:text="${serviceAdapter.logicalTypeName}">logicalTypeName</div>
+    <table>
+        <tr th:each="act: ${serviceActions}">
+            <td>
+                <a th:href="'actions/' +  ${act.id} + '/'" th:text="${act.id}"/>
+            </td>
+        </tr>
+    </table>
+    <hr>
+    <a href="../">Go Back </a>
 </div>
+<hr>
 <div th:fragment="action">
     Action
-    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+    <hr>
+    <div th:text="${bindingResult?.getFieldError('create')?.getDefaultMessage()}">Action Error</div>
+    <div th:text="${bindingResult?.getFieldError('name')?.getDefaultMessage()}">Field Error</div>
+    <form method="POST" th:action="${actionInteraction==null?'invoke/':'.'}">
+        <div th:each="p: ${action.getMetaModel().getParameters()}">
+            <label th:text="${p.getCanonicalFriendlyName()}"></label> <input th:name="${p.id}"/>
+        </div>
+        <input type="submit" th:value="${action.getFriendlyName()}"/>
+    </form>
+    <hr>
+    <a href="../../">Go Back </a>
 </div>
+<hr>
 <div th:fragment="actionResultList">
     Action result List
+    <hr>
     <li th:each="p : ${actionResult.actionReturnedObject.pojo}" th:text="${p}"/>
-    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+    <a href="..">Go Back </a>
 </div>
+<hr>
 <div th:fragment="actionResultObject">
     Action result Object
+    <hr>
     <div th:text="${actionResult.actionReturnedObject.pojo}"></div>
-    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+    <hr>
+    <a href="..">Go Back </a>
 </div>
+<hr>
 <div th:fragment="actionResultEmpty">
     Action result Empty
+    <hr>
     <div th:text="${actionResult.actionReturnedObject}"></div>
-    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"/>
+    <hr>
+    <a href="..">Go Back </a>
 </div>

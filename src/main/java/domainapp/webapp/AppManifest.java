@@ -1,5 +1,7 @@
 package domainapp.webapp;
 
+import org.apache.causeway.security.bypass.authorization.AuthorizorBypass;
+import org.apache.causeway.security.spring.CausewayModuleSecuritySpring;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
@@ -10,7 +12,6 @@ import org.apache.causeway.applib.CausewayModuleApplibMixins;
 import org.apache.causeway.core.config.presets.CausewayPresets;
 import org.apache.causeway.core.runtimeservices.CausewayModuleCoreRuntimeServices;
 import org.apache.causeway.persistence.jpa.eclipselink.CausewayModulePersistenceJpaEclipselink;
-import org.apache.causeway.security.shiro.CausewayModuleSecurityShiro;
 import org.apache.causeway.testing.h2console.ui.CausewayModuleTestingH2ConsoleUi;
 import org.apache.causeway.viewer.restfulobjects.jaxrsresteasy.CausewayModuleViewerRestfulObjectsJaxrsResteasy;
 import org.apache.causeway.viewer.wicket.applib.CausewayModuleViewerWicketApplibMixins;
@@ -24,7 +25,9 @@ import domainapp.modules.hello.HelloWorldModule;
         CausewayModuleApplibChangeAndExecutionLoggers.class,
 
         CausewayModuleCoreRuntimeServices.class,
-        CausewayModuleSecurityShiro.class,
+        CausewayModuleSecuritySpring.class,
+        AuthorizorBypass.class,
+        SecurityConfig.class,
         CausewayModulePersistenceJpaEclipselink.class,
         CausewayModuleViewerRestfulObjectsJaxrsResteasy.class,
         CausewayModuleViewerWicketApplibMixins.class,

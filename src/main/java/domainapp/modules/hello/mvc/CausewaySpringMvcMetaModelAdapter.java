@@ -1,0 +1,205 @@
+package domainapp.modules.hello.mvc;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import lombok.val;
+import org.apache.causeway.applib.annotation.Where;
+import org.apache.causeway.applib.id.LogicalType;
+import org.apache.causeway.applib.services.bookmark.Bookmark;
+import org.apache.causeway.applib.services.xactn.TransactionService;
+import org.apache.causeway.commons.collections.Can;
+import org.apache.causeway.core.metamodel.context.MetaModelContext;
+import org.apache.causeway.core.metamodel.facets.object.domainservice.DomainServiceFacet;
+import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
+import org.apache.causeway.core.metamodel.interactions.managed.InteractionVeto;
+import org.apache.causeway.core.metamodel.interactions.managed.MemberInteraction;
+import org.apache.causeway.core.metamodel.object.ManagedObject;
+import org.apache.causeway.core.metamodel.spec.ActionScope;
+import org.apache.causeway.core.metamodel.spec.feature.MixedIn;
+import org.apache.causeway.core.metamodel.spec.feature.ObjectAction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@Log4j2
+public class CausewaySpringMvcMetaModelAdapter {
+
+    private final MetaModelContext metaModelContext;
+    private final TransactionService transactionService;
+
+    private static final Predicate<ManagedObject> NATURE_REST
+            = (final ManagedObject input) -> DomainServiceFacet.isContributing(input.getSpecification());
+
+    public Collection<ManagedObject> getServices() {
+        return metaModelContext.streamServiceAdapters().filter(NATURE_REST).collect(Collectors.toList());
+    }
+
+    // //////////////////////////////////////////////////////////
+    // domain service
+    // //////////////////////////////////////////////////////////
+
+
+    public Optional<ManagedObject> getServiceAdapter(final @NotNull String serviceIdOrAlias) {
+        return metaModelContext.getSpecificationLoader()
+                .lookupLogicalType(serviceIdOrAlias)
+                .map(LogicalType::getLogicalTypeName)
+                .map(metaModelContext::lookupServiceAdapterById);
+    }
+
+    public List<ObjectAction> getServiceActions(final @NotNull ManagedObject serviceAdapter) {
+        return serviceAdapter.getSpecification().streamActions(ActionScope.PRODUCTION, MixedIn.INCLUDED)
+                .collect(Collectors.toList());
+    }
+
+    // //////////////////////////////////////////////////////////
+    // domain service action
+    // //////////////////////////////////////////////////////////
+
+    public ActionInteraction getActionInteraction(@NotNull ManagedObject serviceAction, @NotNull String actionId) {
+        return ActionInteraction.start(serviceAction, actionId, Where.OBJECT_FORMS).checkVisibility()
+                .checkUsability(MemberInteraction.AccessIntent.ACCESS).
+                checkSemanticConstraint(ActionInteraction.SemanticConstraint.NONE);
+    }
+
+    // //////////////////////////////////////////////////////////
+    // domain service action invoke
+    // //////////////////////////////////////////////////////////
+
+    public ActionInteraction.Result invokeAction(
+            final @NonNull String actionId,
+            final @NonNull ActionInteraction actionInteraction,
+            final @NonNull boolean validateOnly,
+            final @NonNull BindingResult bindingResult,
+            final @NonNull MultiValueMap<String, String> inputs) {
+        val interactionVeto = actionInteraction.getInteractionVeto();
+        if (interactionVeto.isPresent()) {
+            bindingResult.rejectValue(actionId,
+                    "invalid-invocation", interactionVeto.get().getReasonAsString().orElse("Action not allowed to be executed"));
+            return null;
+        }
+
+        val pendingArgs = actionInteraction.startParameterNegotiation().orElse(null);
+
+        if (pendingArgs == null) {
+            // no such action or not visible or not usable
+            bindingResult.rejectValue(actionId,
+                    "action-unavailable", actionId + " action is not available");
+            return null;
+        }
+
+        val hasParams = pendingArgs.getParamCount() > 0;
+
+
+        if (hasParams) {
+
+            // parse parameters ...
+
+            val actionMetaModel = pendingArgs.getHead().getMetaModel();
+
+            val argAdapters = parseArguments(actionMetaModel, inputs);
+            pendingArgs.setParamValues(argAdapters);
+
+            // validate parameters ...
+
+            val individualParamConsents = pendingArgs.validateParameterSetForParameters();
+
+            pendingArgs.getParamModels().zip(individualParamConsents, (managedParam, consent) -> {
+                if (consent.isVetoed()) {
+                    val veto = InteractionVeto.actionParamInvalid(consent);
+                    //TODO find actual member and set that as field to show errors in exactly field
+                    bindingResult.rejectValue(managedParam.getIdentifier().getMemberLogicalName(),
+                            "invalid-parameter", veto.getReasonAsString().orElse("Invalid Value"));
+                }
+            });
+
+        }
+
+        val actionConsent = pendingArgs.validateParameterSetForAction();
+        if (actionConsent.isVetoed()) {
+            bindingResult.reject("invalid-parameter-set", actionConsent.getReasonAsString().orElse("Invalid Parameters for this action"));
+        }
+
+        if (!bindingResult.hasErrors()) {
+            if (validateOnly) {
+                return ActionInteraction.Result.of(
+                        actionInteraction.getManagedAction().orElse(null),
+                        pendingArgs.getParamValues(),
+                        ManagedObject.empty(actionInteraction.getMetamodel().orElseThrow().getReturnType()));
+            }
+
+            val resultOrVeto = actionInteraction.invokeWith(pendingArgs);
+
+            if (resultOrVeto.isFailure()) {
+                bindingResult.reject("action-execution-failed", resultOrVeto.getFailureElseFail().getReasonAsString().orElse("Invalid Parameters for this action"));
+                return null;//TODO better way to notify that action failed to run
+            } else {
+
+                return ActionInteraction.Result.of(
+                        actionInteraction.getManagedActionElseFail(),
+                        pendingArgs.getParamValues(),
+                        resultOrVeto.getSuccessElseFail());
+            }
+        } else {
+            return null;//TODO better way to notify that action has not ran
+        }
+    }
+
+    private static final Pattern OBJECT_OID = Pattern.compile(".*objects\\/([^/]+)\\/(.+)");
+
+    public static Can<ManagedObject> parseArguments(
+            final ObjectAction action,
+            final MultiValueMap<String, String> inputs) {
+
+        val parameters = action.getParameters();
+        val arguments = inputs.entrySet();
+        val parsedArguments = new ArrayList<ManagedObject>();
+
+        int index = 0;
+        for (val arg : arguments) {
+            if (StringUtils.startsWithIgnoreCase(arg.getKey(), "_")) {
+                //ignore technical parameters required for spring-web e.g. _csrf
+            } else {
+                //FIXME handle multiple values
+                val argRepr = arg.getValue().get(0);
+
+                val paramMeta = parameters.getElseFail(index);
+                val paramSpec = paramMeta.getElementType();
+                if ((paramMeta.isOptional() && argRepr == null)) {
+                    parsedArguments.add(ManagedObject.empty(paramSpec));
+                } else {
+                    final Matcher matcher = OBJECT_OID.matcher((String) argRepr);
+                    if (matcher.matches()) {
+                        String domainType = matcher.group(1);
+                        String instanceId = matcher.group(2);
+                        parsedArguments.add(action.getMetaModelContext().getObjectManager().loadObjectElseFail(Bookmark.forLogicalTypeNameAndIdentifier(domainType, instanceId)));
+                    } else {
+                        parsedArguments.add(ManagedObject.value(paramSpec, argRepr));
+                    }
+                }
+                index++;
+            }
+        }
+
+        for (; index <= parameters.size(); index++) {
+            val paramMeta = parameters.getElseFail(index);
+            val paramSpec = paramMeta.getElementType();
+            parsedArguments.add(ManagedObject.empty(paramSpec));
+        }
+        return Can.ofCollection(parsedArguments);
+    }
+}

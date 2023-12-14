@@ -1,4 +1,3 @@
-<!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <hr>
 <div th:fragment="services">
@@ -7,7 +6,7 @@
     <table>
         <tr th:each="sa: ${serviceAdapters}">
             <td>
-                <a th:href="${sa.logicalTypeName} + '/'" th:text="${sa.logicalTypeName}"/>
+                <a th:href="${sa.logicalTypeName} + '/'" th:text="${sa.logicalTypeName}"></a>
             </td>
         </tr>
     </table>
@@ -20,7 +19,7 @@
     <table>
         <tr th:each="act: ${serviceActions}">
             <td>
-                <a th:href="'actions/' +  ${act.id} + '/'" th:text="${act.id}"/>
+                <a th:href="'actions/' +  ${act.id} + '/'" th:text="${act.id}"></a>
             </td>
         </tr>
     </table>
@@ -31,13 +30,16 @@
 <div th:fragment="action">
     Action
     <hr>
-    <div th:text="${bindingResult?.getFieldError('create')?.getDefaultMessage()}">Action Error</div>
-    <div th:text="${bindingResult?.getFieldError('name')?.getDefaultMessage()}">Field Error</div>
+    <div th:text="${bindingResult?.getFieldError(action?.id)?.getDefaultMessage()}">Action Error</div>
     <form method="POST" th:action="${actionInteraction==null?'invoke/':'.'}">
         <div th:each="p: ${action.getMetaModel().getParameters()}">
-            <label th:text="${p.getCanonicalFriendlyName()}"></label> <input th:name="${p.id}"/>
+            <label th:text="${p.getCanonicalFriendlyName()}"></label>
+            <input th:name="${p.id}">
+            <div th:text="${bindingResult?.getFieldError(p.getCanonicalFriendlyName())?.getDefaultMessage()}">Field
+                Error
+            </div>
         </div>
-        <input type="submit" th:value="${action.getFriendlyName()}"/>
+        <input type="submit" th:value="${action.getFriendlyName()}">
     </form>
     <hr>
     <a href="../../">Go Back </a>
@@ -46,7 +48,10 @@
 <div th:fragment="actionResultList">
     Action result List
     <hr>
-    <li th:each="p : ${actionResult.actionReturnedObject.pojo}" th:text="${p}"/>
+    <li th:each="p : ${actionResult.actionReturnedObject.pojo}">
+        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p)}"
+           th:text="${p}"/>
+    </li>
     <a href="..">Go Back </a>
 </div>
 <hr>
@@ -65,3 +70,4 @@
     <hr>
     <a href="..">Go Back </a>
 </div>
+</html>

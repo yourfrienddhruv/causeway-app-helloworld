@@ -7,8 +7,10 @@ import lombok.val;
 import org.apache.causeway.applib.annotation.Where;
 import org.apache.causeway.applib.id.LogicalType;
 import org.apache.causeway.applib.services.bookmark.Bookmark;
+import org.apache.causeway.applib.services.bookmark.BookmarkService;
 import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.commons.collections.Can;
+import org.apache.causeway.commons.io.UrlUtils;
 import org.apache.causeway.core.metamodel.context.MetaModelContext;
 import org.apache.causeway.core.metamodel.facets.object.domainservice.DomainServiceFacet;
 import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
@@ -122,7 +124,7 @@ public class CausewaySpringMvcMetaModelAdapter {
                 if (consent.isVetoed()) {
                     val veto = InteractionVeto.actionParamInvalid(consent);
                     //TODO find actual member and set that as field to show errors in exactly field
-                    bindingResult.rejectValue(managedParam.getIdentifier().getMemberLogicalName(),
+                    bindingResult.rejectValue(managedParam.getFriendlyName(),
                             "invalid-parameter", veto.getReasonAsString().orElse("Invalid Value"));
                 }
             });
@@ -202,4 +204,25 @@ public class CausewaySpringMvcMetaModelAdapter {
         }
         return Can.ofCollection(parsedArguments);
     }
+
+    //-----HELPERS to simplify complicated bean lookups by type from SPeL ----//
+    // e.g. #{beanFactory.getBean(T(org.apache.causeway.applib.services.bookmark.BookmarkService)).bookmarkForElseFail(x)}
+
+    private final BookmarkService bookmarkService;
+
+    public String getBookmarkAsUrl(Object o) {
+        val bookmark = bookmarkService.bookmarkForElseFail(o);
+        return "/mvc/objects/" + bookmark.getLogicalTypeName()
+                + '/' + UrlUtils.urlEncodeUtf8(bookmark.getIdentifier()) + '/';
+    }
+
+    protected Optional<ManagedObject> getObject(
+            final String domainType,
+            final String instanceIdEncoded) {
+        final String instanceIdDecoded = UrlUtils.urlDecodeUtf8(instanceIdEncoded);
+
+        val bookmark = Bookmark.forLogicalTypeNameAndIdentifier(domainType, instanceIdDecoded);
+        return metaModelContext.getObjectManager().loadObject(bookmark);
+    }
+
 }

@@ -1,0 +1,36 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="object">
+    Single object
+    <hr>
+    <div th:text="${object.logicalTypeName}">logicalTypeName</div>
+    <hr>
+    Properties
+    <div th:each="pg: ${propertyGroups}">
+        <div th:text="${pg.key}"></div>
+        <table>
+            <tr th:each="p: ${pg.value}">
+                <td>
+                    <label th:text="${p.key}"></label>
+                </td>
+                <td>
+                    <input th:value="${p.value.pojo}"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+    Collections
+    <div th:each="cs: ${collections}">
+        <div th:text="${cs.key}"></div>
+        <table th:each="elements: ${cs.value}">
+            <tr th:each="e: ${elements}">
+                <td>
+                    <a th:href="'actions/' +  ${c.key} + '/'" th:text="${c.value}"></a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+</div>
+<hr>
+</html>

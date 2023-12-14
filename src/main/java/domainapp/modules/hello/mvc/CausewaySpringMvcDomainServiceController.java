@@ -3,6 +3,7 @@ package domainapp.modules.hello.mvc;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import org.apache.causeway.applib.services.bookmark.BookmarkService;
 import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,10 +22,11 @@ import java.util.Collections;
 @RequestMapping("mvc/services/")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
-public class DomainServiceResourceServerside {
+public class CausewaySpringMvcDomainServiceController {
 
     private final CausewaySpringMvcMetaModelAdapter adapter;
     private final TransactionService transactionService;
+    private final BookmarkService bookmarkService;
 
 
     @GetMapping()
@@ -121,12 +123,14 @@ public class DomainServiceResourceServerside {
 
         try {
             val actionResult = adapter.invokeAction(actionId, actionInteraction, validateOnly, bindingResult, inputs);
-            model.addAttribute("action", actionInteraction.getManagedAction().get());
+            val action = actionInteraction.getManagedAction().orElseThrow();
+            model.addAttribute("action", action);
             model.addAttribute("actionInteraction", actionInteraction);
             model.addAttribute("bindingResult", bindingResult);
 
-            //flush to catch DB constrains error by triggering JPA/JDO flush here so we can catch and report
+            //flush to catch DB constrains error by triggering JPA/JDO flush here, so we can catch and report
             transactionService.flushTransaction();
+            log.info("getReturnType {} {}", action.getMetaModel().getReturnType(), bookmarkService);
 
             if (bindingResult.hasErrors() || actionResult == null) {
                 //no invocation thus no actionResult

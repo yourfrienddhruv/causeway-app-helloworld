@@ -4,10 +4,16 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import org.apache.causeway.applib.annotation.DomainServiceLayout;
 import org.apache.causeway.applib.annotation.Where;
 import org.apache.causeway.applib.id.LogicalType;
+import org.apache.causeway.applib.layout.component.ServiceActionLayoutData;
+import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenu;
+import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenuBar;
+import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenuSection;
 import org.apache.causeway.applib.services.bookmark.Bookmark;
 import org.apache.causeway.applib.services.bookmark.BookmarkService;
+import org.apache.causeway.applib.services.menu.MenuBarsService;
 import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.commons.collections.Can;
 import org.apache.causeway.commons.io.UrlUtils;
@@ -15,11 +21,13 @@ import org.apache.causeway.core.metamodel.context.MetaModelContext;
 import org.apache.causeway.core.metamodel.facets.object.domainservice.DomainServiceFacet;
 import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
 import org.apache.causeway.core.metamodel.interactions.managed.InteractionVeto;
+import org.apache.causeway.core.metamodel.interactions.managed.ManagedAction;
 import org.apache.causeway.core.metamodel.interactions.managed.MemberInteraction;
 import org.apache.causeway.core.metamodel.object.ManagedObject;
 import org.apache.causeway.core.metamodel.spec.ActionScope;
 import org.apache.causeway.core.metamodel.spec.feature.MixedIn;
 import org.apache.causeway.core.metamodel.spec.feature.ObjectAction;
+import org.apache.causeway.viewer.commons.applib.services.branding.BrandingUiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
@@ -27,10 +35,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -212,7 +217,7 @@ public class CausewaySpringMvcMetaModelAdapter {
 
     public String getBookmarkAsUrl(Object o) {
         val bookmark = bookmarkService.bookmarkForElseFail(o);
-        return "/mvc/objects/" + bookmark.getLogicalTypeName()
+        return "/web/objects/" + bookmark.getLogicalTypeName()
                 + '/' + UrlUtils.urlEncodeUtf8(bookmark.getIdentifier()) + '/';
     }
 
@@ -225,4 +230,68 @@ public class CausewaySpringMvcMetaModelAdapter {
         return metaModelContext.getObjectManager().loadObject(bookmark);
     }
 
+    // //////////////////////////////////////////////////////////
+    // menus
+    // //////////////////////////////////////////////////////////
+
+    private final BrandingUiService brandingUiService;
+
+    public String getApplicationName() {
+        return brandingUiService.getHeaderBranding().getName().orElse("App");
+    }
+
+    public String getApplicationLogo() {
+        return '/' + brandingUiService.getHeaderBranding().getLogoHref().orElse("images/favicon.png");
+    }
+
+
+    private final MenuBarsService menuBarsService;
+
+    public LinkedHashMap<DomainServiceLayout.MenuBar,
+            LinkedHashMap<BSMenu,
+                    LinkedHashMap<BSMenuSection,
+                            LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>> getMenuBars() {
+        val menuBars = new LinkedHashMap<DomainServiceLayout.MenuBar, LinkedHashMap<BSMenu, LinkedHashMap<BSMenuSection, LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>>();
+        Arrays.stream(DomainServiceLayout.MenuBar.values()).forEach(
+                type -> {
+                    val menuBar = (BSMenuBar) menuBarsService.menuBars().menuBarFor(type);
+                    if (menuBar != null) {
+                        menuBars.put(type, getMenus(menuBar));
+                    }//else empty
+                }
+        );
+        return menuBars;
+    }
+
+    private LinkedHashMap<BSMenu,
+            LinkedHashMap<BSMenuSection,
+                    LinkedHashMap<ServiceActionLayoutData, ManagedAction>>> getMenus(BSMenuBar bsMenuBar) {
+        val menuBar = new LinkedHashMap<BSMenu,
+                LinkedHashMap<BSMenuSection,
+                        LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>();
+        for (val bsMenu : bsMenuBar.getMenus()) {
+            val sections = new LinkedHashMap<BSMenuSection,
+                    LinkedHashMap<ServiceActionLayoutData, ManagedAction>>();
+            for (val bsSection : bsMenu.getSections()) {
+                val actions = new LinkedHashMap<ServiceActionLayoutData, ManagedAction>();
+                for (val serviceActionLayoutData : bsSection.getServiceActions()) {
+                    val serviceAction = getServiceAdapter(
+                            serviceActionLayoutData.getLogicalTypeName());
+                    if (serviceAction.isPresent()) {
+                        val possibleAction = getActionInteraction(serviceAction.get(),
+                                serviceActionLayoutData.getId()).getManagedAction();
+                        possibleAction.ifPresent(managedAction
+                                -> actions.put(serviceActionLayoutData, managedAction));
+                    }//else not visible
+                }
+                if (!actions.isEmpty()) {
+                    sections.put(bsSection, actions);
+                }//skip empty
+            }
+            if (!sections.isEmpty()) {
+                menuBar.put(bsMenu, sections);
+            }//skip empty
+        }
+        return menuBar;
+    }
 }

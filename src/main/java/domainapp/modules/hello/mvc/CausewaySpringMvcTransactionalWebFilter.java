@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-@WebFilter(urlPatterns = "/mvc/*")
+@WebFilter(urlPatterns = "/web/*")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class CausewaySpringMvcTransactionalWebFilter extends OncePerRequestFilter {
     private final TransactionService transactionService;

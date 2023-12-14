@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("mvc/objects/")
+@RequestMapping("web/objects/")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
 public class CausewaySpringMvcDomainObjectController {

@@ -15,11 +15,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.Collections;
 
 @Controller
-@RequestMapping("mvc/services/")
+@RequestMapping("web/services/")
+@Produces(MediaType.APPLICATION_XHTML_XML)
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
 public class CausewaySpringMvcDomainServiceController {

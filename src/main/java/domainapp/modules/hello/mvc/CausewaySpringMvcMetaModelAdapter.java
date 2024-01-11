@@ -221,7 +221,7 @@ public class CausewaySpringMvcMetaModelAdapter {
 
     public String getBookmarkAsUrl(Object o) {
         val bookmark = bookmarkService.bookmarkForElseFail(o);
-        return "/web/objects/" + bookmark.getLogicalTypeName() + '/' + UrlUtils.urlEncodeUtf8(bookmark.getIdentifier());
+        return "/web/objects/" + bookmark.getLogicalTypeName() + '/' + bookmark.getIdentifier();
     }
 
     protected Optional<ManagedObject> getObject(

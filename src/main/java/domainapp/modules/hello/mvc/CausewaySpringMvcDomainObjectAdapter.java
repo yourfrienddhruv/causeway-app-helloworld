@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.val;
 import org.apache.causeway.applib.annotation.Where;
-import org.apache.causeway.applib.services.bookmark.BookmarkService;
-import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.core.metamodel.consent.InteractionInitiatedBy;
 import org.apache.causeway.core.metamodel.interactions.managed.ManagedCollection;
 import org.apache.causeway.core.metamodel.object.ManagedObject;
@@ -14,31 +12,23 @@ import org.apache.causeway.core.metamodel.spec.feature.MixedIn;
 import org.apache.causeway.core.metamodel.spec.feature.ObjectAction;
 import org.apache.causeway.core.metamodel.spec.feature.ObjectAssociation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Controller
-@RequestMapping("web/objects/")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
-public class CausewaySpringMvcDomainObjectController {
+public class CausewaySpringMvcDomainObjectAdapter {
 
     private final CausewaySpringMvcMetaModelAdapter adapter;
-    private final TransactionService transactionService;
-    private final BookmarkService bookmarkService;
 
 
     // //////////////////////////////////////////////////////////
     // domain object
     // //////////////////////////////////////////////////////////
 
-    @GetMapping("{domainType}/{instanceId}/")
     public String object(@PathVariable String domainType, @PathVariable String instanceId, Model model) {
         val found = adapter.getObject(domainType, instanceId);
         if (found.isPresent()) {

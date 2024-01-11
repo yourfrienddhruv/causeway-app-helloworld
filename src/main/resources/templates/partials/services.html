@@ -62,7 +62,7 @@
     Action result List
     <hr>
     <li th:each="p : ${actionResult.actionReturnedObject.pojo}">
-        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p)}"
+        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p) + '.htmx'}"
            th:text="${p}"/>
     </li>
 </div>

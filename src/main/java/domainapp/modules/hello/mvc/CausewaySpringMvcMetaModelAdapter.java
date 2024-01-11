@@ -14,7 +14,6 @@ import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenuSection;
 import org.apache.causeway.applib.services.bookmark.Bookmark;
 import org.apache.causeway.applib.services.bookmark.BookmarkService;
 import org.apache.causeway.applib.services.menu.MenuBarsService;
-import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.commons.collections.Can;
 import org.apache.causeway.commons.io.UrlUtils;
 import org.apache.causeway.core.metamodel.context.MetaModelContext;
@@ -47,7 +46,6 @@ import java.util.stream.Collectors;
 public class CausewaySpringMvcMetaModelAdapter {
 
     private final MetaModelContext metaModelContext;
-    private final TransactionService transactionService;
 
     private static final Predicate<ManagedObject> NATURE_REST
             = (final ManagedObject input) -> DomainServiceFacet.isContributing(input.getSpecification());
@@ -138,7 +136,9 @@ public class CausewaySpringMvcMetaModelAdapter {
 
         val actionConsent = pendingArgs.validateParameterSetForAction();
         if (actionConsent.isVetoed()) {
-            bindingResult.reject("invalid-parameter-set", actionConsent.getReasonAsString().orElse("Invalid Parameters for this action"));
+            bindingResult.reject("invalid-parameter-set",
+                    actionConsent.getReasonAsString()
+                            .orElse("Invalid Parameters for this action"));
         }
 
         if (!bindingResult.hasErrors()) {
@@ -146,13 +146,16 @@ public class CausewaySpringMvcMetaModelAdapter {
                 return ActionInteraction.Result.of(
                         actionInteraction.getManagedAction().orElse(null),
                         pendingArgs.getParamValues(),
-                        ManagedObject.empty(actionInteraction.getMetamodel().orElseThrow().getReturnType()));
+                        ManagedObject.empty(actionInteraction.getMetamodel()
+                                .orElseThrow().getReturnType()));
             }
 
             val resultOrVeto = actionInteraction.invokeWith(pendingArgs);
 
             if (resultOrVeto.isFailure()) {
-                bindingResult.reject("action-execution-failed", resultOrVeto.getFailureElseFail().getReasonAsString().orElse("Invalid Parameters for this action"));
+                bindingResult.reject("action-execution-failed",
+                        resultOrVeto.getFailureElseFail().getReasonAsString()
+                                .orElse("Invalid Parameters for this action"));
                 return null;//TODO better way to notify that action failed to run
             } else {
 
@@ -193,7 +196,8 @@ public class CausewaySpringMvcMetaModelAdapter {
                     if (matcher.matches()) {
                         String domainType = matcher.group(1);
                         String instanceId = matcher.group(2);
-                        parsedArguments.add(action.getMetaModelContext().getObjectManager().loadObjectElseFail(Bookmark.forLogicalTypeNameAndIdentifier(domainType, instanceId)));
+                        parsedArguments.add(action.getMetaModelContext().getObjectManager()
+                                .loadObjectElseFail(Bookmark.forLogicalTypeNameAndIdentifier(domainType, instanceId)));
                     } else {
                         parsedArguments.add(ManagedObject.value(paramSpec, argRepr));
                     }
@@ -210,7 +214,7 @@ public class CausewaySpringMvcMetaModelAdapter {
         return Can.ofCollection(parsedArguments);
     }
 
-    //-----HELPERS to simplify complicated bean lookups by type from SPeL ----//
+    //-----HELPERS to simplify complicated bean look-ups by type from SPeL ----//
     // e.g. #{beanFactory.getBean(T(org.apache.causeway.applib.services.bookmark.BookmarkService)).bookmarkForElseFail(x)}
 
     private final BookmarkService bookmarkService;
@@ -247,20 +251,17 @@ public class CausewaySpringMvcMetaModelAdapter {
 
     private final MenuBarsService menuBarsService;
 
-    public LinkedHashMap<DomainServiceLayout.MenuBar,
-            LinkedHashMap<BSMenu,
-                    LinkedHashMap<BSMenuSection,
-                            LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>> getMenuBars() {
-        val menuBars = new LinkedHashMap<DomainServiceLayout.MenuBar, LinkedHashMap<BSMenu, LinkedHashMap<BSMenuSection, LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>>();
-        Arrays.stream(DomainServiceLayout.MenuBar.values()).forEach(
-                type -> {
-                    val menuBar = (BSMenuBar) menuBarsService.menuBars().menuBarFor(type);
-                    if (menuBar != null) {
-                        menuBars.put(type, getMenus(menuBar));
-                    }//else empty
-                }
-        );
-        return menuBars;
+    public LinkedHashMap<BSMenu,
+            LinkedHashMap<BSMenuSection,
+                    LinkedHashMap<ServiceActionLayoutData, ManagedAction>>> getMenuBar(
+            DomainServiceLayout.MenuBar menuBarType) {
+        val menuBar = (BSMenuBar) menuBarsService.menuBars().menuBarFor(menuBarType);
+        if (menuBar != null) {
+            return getMenus(menuBar);
+        } else {
+            return new LinkedHashMap<BSMenu,
+                    LinkedHashMap<BSMenuSection, LinkedHashMap<ServiceActionLayoutData, ManagedAction>>>();
+        }
     }
 
     private LinkedHashMap<BSMenu,

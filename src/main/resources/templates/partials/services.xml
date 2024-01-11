@@ -1,0 +1,14 @@
+<doc xmlns="https://hyperview.org/hyperview" xmlns:th="http://www.thymeleaf.org"
+     th:fragment="services">
+    <screen id="main">
+        <body>
+            <text>Hello Services</text>
+        </body>
+    </screen>
+
+    <screen id="otherScreen">
+        <body>
+            <text>Hello again</text>
+        </body>
+    </screen>
+</doc>

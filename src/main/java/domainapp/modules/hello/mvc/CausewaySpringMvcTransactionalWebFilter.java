@@ -13,12 +13,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * Run modifying operations under transactions
+ */
 @Component
 @WebFilter(urlPatterns = "/web/*")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class CausewaySpringMvcTransactionalWebFilter extends OncePerRequestFilter {
     private final TransactionService transactionService;
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return !request.getMethod().startsWith("P");
+        // !StringUtils.equalsAny(HttpPost.METHOD_NAME, HttpPut.METHOD_NAME, request.getMethod());
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         transactionService.runWithinCurrentTransactionElseCreateNew(() -> {

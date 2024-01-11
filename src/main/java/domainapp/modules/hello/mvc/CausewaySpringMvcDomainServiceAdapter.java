@@ -8,43 +8,41 @@ import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.MapBindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import java.util.Collection;
 import java.util.Collections;
 
-@Controller
-@RequestMapping("web/services/")
-@Produces(MediaType.APPLICATION_XHTML_XML)
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
-public class CausewaySpringMvcDomainServiceController {
+public class CausewaySpringMvcDomainServiceAdapter {
 
     private final CausewaySpringMvcMetaModelAdapter adapter;
     private final TransactionService transactionService;
     private final BookmarkService bookmarkService;
 
 
-    @GetMapping()
+    /*
+     * Not used for UIs, use menu instead
+     *   @GetMapping
+     */
     public String services(Model model) {
         val serviceAdapters = adapter.getServices();
         model.addAttribute("serviceAdapters", serviceAdapters);
 
-        return "services :: services";
+        return "services.html :: services";
     }
 
     // //////////////////////////////////////////////////////////
     // domain service
     // //////////////////////////////////////////////////////////
 
-    @GetMapping("/{serviceId}/")
     public String service(@PathVariable String serviceId, Model model) {
         val serviceAdapter = adapter.getServiceAdapter(serviceId).orElseThrow();
         val serviceActions = adapter.getServiceActions(serviceAdapter);
@@ -58,7 +56,6 @@ public class CausewaySpringMvcDomainServiceController {
     // domain service action
     // //////////////////////////////////////////////////////////
 
-    @GetMapping("/{serviceId}/actions/{actionId}/")
     public String actionPrompt(
             @PathVariable String serviceId,
             @PathVariable String actionId,
@@ -68,7 +65,8 @@ public class CausewaySpringMvcDomainServiceController {
         val possibleAction = adapter.getActionInteraction(serviceAction, actionId).getManagedAction();
 
         if (possibleAction.isPresent()) {
-            model.addAttribute("action", possibleAction.get());
+            var action = possibleAction.get();
+            model.addAttribute("action", action);
             return "services :: action";
         } else {
             model.addAttribute("action", serviceAction);
@@ -80,7 +78,6 @@ public class CausewaySpringMvcDomainServiceController {
     // domain service action invoke
     // //////////////////////////////////////////////////////////
 
-    @GetMapping("/{serviceId}/actions/{actionId}/invoke/")
     public String invokeActionQueryOnly(
             @PathVariable String serviceId,
             @PathVariable String actionId,
@@ -93,7 +90,6 @@ public class CausewaySpringMvcDomainServiceController {
     }
 
 
-    @PutMapping("/{serviceId}/actions/{actionId}/invoke/")
     public String invokeActionIdempotent(
             @PathVariable String serviceId,
             @PathVariable String actionId,
@@ -106,7 +102,6 @@ public class CausewaySpringMvcDomainServiceController {
 
     }
 
-    @PostMapping("/{serviceId}/actions/{actionId}/invoke/")
     public String invokeAction(
             @PathVariable String serviceId,
             @PathVariable String actionId,

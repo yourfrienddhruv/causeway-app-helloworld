@@ -1,0 +1,25 @@
+<ul class="menu menu-horizontal px-1">
+    <li th:each="menu : ${menuBarPrimary}">
+        <details>
+            <summary th:text="${menu.key.named}">Menu</summary>
+            <ul th:each="section : ${menu.value}">
+                <li th:each="section : ${menu.value}" th:if="${section.key.named}">
+                    <summary th:text="${section.key.named}">Section</summary>
+                </li>
+                <li th:each="action : ${section.value}">
+                    <a th:if="${action.value.metaModel.parameterCount==0 && action.value.metaModel.semantics.safeInNature}"
+                       th:attr="hx-get='__${#httpServletRequest.requestURI}__services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} + '/invoke.htmx'"
+                       hx-target="main"
+                       href=""
+                       th:text="${action.value.friendlyName}"></a>
+
+                    <a th:if="${!(action.value.metaModel.parameterCount==0 && action.value.metaModel.semantics.safeInNature)}"
+                       th:attr="hx-get='__${#httpServletRequest.requestURI}__services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} + '.htmx'"
+                       hx-target="main"
+                       href=""
+                       th:text="${action.value.friendlyName}"></a>
+                </li>
+            </ul>
+        </details>
+    </li>
+</ul>

@@ -8,13 +8,13 @@
                 </li>
                 <li th:each="action : ${section.value}">
                     <a th:if="${action.value.metaModel.parameterCount==0 && action.value.metaModel.semantics.safeInNature}"
-                       th:attr="hx-get='__${#httpServletRequest.requestURI}__/services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} + '/invoke'"
+                       th:attr="hx-get='/web/services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} + '/invoke'"
                        hx-target="main"
                        href=""
                        th:text="${action.value.friendlyName}"></a>
 
                     <a th:if="${!(action.value.metaModel.parameterCount==0 && action.value.metaModel.semantics.safeInNature)}"
-                       th:attr="hx-get='__${#httpServletRequest.requestURI}__/services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} "
+                       th:attr="hx-get='/web/services/'+ ${action.key.logicalTypeName} +'/actions/' + ${action.key.id} "
                        hx-target="main"
                        href=""
                        th:text="${action.value.friendlyName}"></a>

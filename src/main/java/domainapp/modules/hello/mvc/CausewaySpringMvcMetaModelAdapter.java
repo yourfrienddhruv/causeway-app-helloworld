@@ -13,6 +13,7 @@ import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenuBar;
 import org.apache.causeway.applib.layout.menubars.bootstrap.BSMenuSection;
 import org.apache.causeway.applib.services.bookmark.Bookmark;
 import org.apache.causeway.applib.services.bookmark.BookmarkService;
+import org.apache.causeway.applib.services.iactnlayer.InteractionService;
 import org.apache.causeway.applib.services.menu.MenuBarsService;
 import org.apache.causeway.commons.collections.Can;
 import org.apache.causeway.commons.io.UrlUtils;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 public class CausewaySpringMvcMetaModelAdapter {
 
     private final MetaModelContext metaModelContext;
+    private final InteractionService interactionService;
 
     private static final Predicate<ManagedObject> NATURE_REST
             = (final ManagedObject input) -> DomainServiceFacet.isContributing(input.getSpecification());
@@ -242,6 +244,10 @@ public class CausewaySpringMvcMetaModelAdapter {
 
 
     public String fullPageResponse(String layoutTemplate, Model model, String partialTemplate) {
+        val user = interactionService.currentInteractionContextElseFail().getUser();
+        model.addAttribute("applicationUserName", user.getName());
+        model.addAttribute("applicationUserNamePrefix", user.getName().substring(0, 1));
+        model.addAttribute("applicationUserAvatarUrl", user.getAvatarUrl());
         model.addAttribute("applicationName", getApplicationName());
         model.addAttribute("applicationLogo", getApplicationLogo());
         model.addAttribute("menuBarPrimary", getMenuBar(DomainServiceLayout.MenuBar.PRIMARY));
@@ -251,6 +257,7 @@ public class CausewaySpringMvcMetaModelAdapter {
         model.addAttribute("partial", partialTemplate);
         return layoutTemplate;
     }
+
     String getApplicationName() {
         return brandingUiService.getHeaderBranding().getName().orElse("App");
     }

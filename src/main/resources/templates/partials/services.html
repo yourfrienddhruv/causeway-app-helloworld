@@ -68,9 +68,7 @@
 </div>
 <hr>
 <div th:fragment="actionResultEmpty">
-    Action result Empty
-    <hr>
-    <div th:text="${actionResult.actionReturnedObject}"></div>
+    <span th:text="${action.getFriendlyName()}"></span> is successful.
 </div>
 <hr>
 <div th:fragment="action-unavailable">

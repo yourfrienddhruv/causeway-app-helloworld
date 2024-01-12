@@ -1,9 +1,9 @@
 package domainapp.modules.hello.mvc;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.causeway.applib.annotation.PriorityPrecedence;
-import org.apache.causeway.applib.services.bookmark.BookmarkService;
-import org.apache.causeway.applib.services.xactn.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,58 +17,53 @@ import javax.ws.rs.core.MediaType;
 @Controller
 @Order(PriorityPrecedence.MIDPOINT)
 @RequestMapping("web/services/")
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
-public class CausewaySpringMvcDomainServiceHyperMediaController extends CausewaySpringMvcDomainServiceAdapter {
+public class CausewaySpringMvcDomainServiceHyperMediaController {
 
+    private final CausewaySpringMvcDomainServiceAdapter serviceAdapter;
+    private final CausewaySpringMvcMetaModelAdapter metaModelAdapter;
 
-    public CausewaySpringMvcDomainServiceHyperMediaController(CausewaySpringMvcMetaModelAdapter adapter,
-                                                              TransactionService transactionService,
-                                                              BookmarkService bookmarkService) {
-        super(adapter, transactionService, bookmarkService);
-    }
-
-    @GetMapping("/{serviceId}/actions/{actionId}.htmx")
+    @GetMapping(path = "/{serviceId}/actions/{actionId}", headers = {"HX-Request"})
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String actionPromptHtmx(@PathVariable String serviceId, @PathVariable String actionId, Model model) {
-        return "partials/" + super.actionPrompt(serviceId, actionId, model);
+        return "partials/" + serviceAdapter.actionPrompt(serviceId, actionId, model);
     }
 
-    @GetMapping("/{serviceId}/actions/{actionId}.html")
+    @GetMapping("/{serviceId}/actions/{actionId}")
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String actionPromptHtml(@PathVariable String serviceId, @PathVariable String actionId, Model model) {
-        model.addAttribute("partial"
-                , "partials/" + super.actionPrompt(serviceId, actionId, model));
-        return "layout.html";
+        return metaModelAdapter.fullPageResponse("layout.html", model,
+                "partials/" + serviceAdapter.actionPrompt(serviceId, actionId, model));
     }
 
     @GetMapping("/{serviceId}/actions/{actionId}.xml")
     @Produces(MediaType.APPLICATION_XML)
     public String actionPromptXml(@PathVariable String serviceId, @PathVariable String actionId, Model model) {
         return StringUtils.replace(
-                "partials/" + super.actionPrompt(serviceId, actionId, model),
+                "partials/" + serviceAdapter.actionPrompt(serviceId, actionId, model),
                 ".html", ".xml");
     }
 
     //=======================
 
-    @GetMapping("/{serviceId}/actions/{actionId}/invoke.htmx")
+    @GetMapping(path = "/{serviceId}/actions/{actionId}/invoke", headers = {"HX-Request"})
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String invokeActionQueryOnlyHtmx(@PathVariable String serviceId, @PathVariable String actionId,
                                             @RequestParam(defaultValue = "false") boolean validateOnly,
                                             @RequestParam MultiValueMap<String, String> inputs,
                                             Model model) {
-        return "partials/" + super.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model);
+        return "partials/" + serviceAdapter.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model);
     }
 
-    @GetMapping("/{serviceId}/actions/{actionId}/invoke.html")
+    @GetMapping("/{serviceId}/actions/{actionId}/invoke")
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String invokeActionQueryOnlyHtml(@PathVariable String serviceId, @PathVariable String actionId,
                                             @RequestParam(defaultValue = "false") boolean validateOnly,
                                             @RequestParam MultiValueMap<String, String> inputs,
                                             Model model) {
-        model.addAttribute("partial",
-                "partials/" + super.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model));
-        return "layout.html";
+        return metaModelAdapter.fullPageResponse("layout.html", model,
+                "partials/" + serviceAdapter.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model));
     }
 
     @GetMapping("/{serviceId}/actions/{actionId}/invoke.xml")
@@ -78,30 +73,29 @@ public class CausewaySpringMvcDomainServiceHyperMediaController extends Causeway
                                            @RequestParam MultiValueMap<String, String> inputs,
                                            Model model) {
         return StringUtils.replace(
-                "partials/" + super.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model),
+                "partials/" + serviceAdapter.invokeActionQueryOnly(serviceId, actionId, validateOnly, inputs, model),
                 ".html", ".xml");
     }
 
     //=======================
 
-    @PutMapping("/{serviceId}/actions/{actionId}/invoke.htmx")
+    @PutMapping(path = "/{serviceId}/actions/{actionId}/invoke", headers = {"HX-Request"})
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String invokeActionIdempotentHtmx(@PathVariable String serviceId, @PathVariable String actionId,
                                              @RequestParam(defaultValue = "false") boolean validateOnly,
                                              @RequestBody MultiValueMap<String, String> inputs,
                                              Model model) {
-        return "partials/" + super.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model);
+        return "partials/" + serviceAdapter.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model);
     }
 
-    @PutMapping("/{serviceId}/actions/{actionId}/invoke.html")
+    @PutMapping("/{serviceId}/actions/{actionId}/invoke")
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String invokeActionIdempotentHtml(@PathVariable String serviceId, @PathVariable String actionId,
                                              @RequestParam(defaultValue = "false") boolean validateOnly,
                                              @RequestBody MultiValueMap<String, String> inputs,
                                              Model model) {
-        model.addAttribute("partial",
-                "partials/" + super.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model));
-        return "layout.html";
+        return metaModelAdapter.fullPageResponse("layout.html", model,
+                "partials/" + serviceAdapter.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model));
     }
 
     @PutMapping("/{serviceId}/actions/{actionId}/invoke.xml")
@@ -111,13 +105,13 @@ public class CausewaySpringMvcDomainServiceHyperMediaController extends Causeway
                                             @RequestBody MultiValueMap<String, String> inputs,
                                             Model model) {
         return StringUtils.replace(
-                "partials/" + super.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model)
+                "partials/" + serviceAdapter.invokeActionIdempotent(serviceId, actionId, validateOnly, inputs, model)
                 , ".html", ".xml");
     }
 
     //=======================
 
-    @PostMapping("/{serviceId}/actions/{actionId}/invoke.htmx")
+    @PostMapping(path = "/{serviceId}/actions/{actionId}/invoke", headers = {"HX-Request"})
     @Produces(MediaType.APPLICATION_XHTML_XML)
     public String invokeActionHtmx(
             @PathVariable String serviceId,
@@ -125,7 +119,7 @@ public class CausewaySpringMvcDomainServiceHyperMediaController extends Causeway
             @RequestParam(defaultValue = "false") boolean validateOnly,
             @RequestBody MultiValueMap<String, String> inputs,
             Model model) {
-        return "partials/" + super.invokeAction(serviceId, actionId, validateOnly, inputs, model);
+        return "partials/" + serviceAdapter.invokeAction(serviceId, actionId, validateOnly, inputs, model);
     }
 
     @PostMapping("/{serviceId}/actions/{actionId}/invoke.html")
@@ -136,9 +130,8 @@ public class CausewaySpringMvcDomainServiceHyperMediaController extends Causeway
             @RequestParam(defaultValue = "false") boolean validateOnly,
             @RequestBody MultiValueMap<String, String> inputs,
             Model model) {
-        model.addAttribute("partial",
-                "partials/" + super.invokeAction(serviceId, actionId, validateOnly, inputs, model));
-        return "layout.html";
+        return metaModelAdapter.fullPageResponse("layout.html", model,
+                "partials/" + serviceAdapter.invokeAction(serviceId, actionId, validateOnly, inputs, model));
     }
 
     @PostMapping("/{serviceId}/actions/{actionId}/invoke.xml")
@@ -150,7 +143,7 @@ public class CausewaySpringMvcDomainServiceHyperMediaController extends Causeway
             @RequestBody MultiValueMap<String, String> inputs,
             Model model) {
         return StringUtils.replace(
-                "partials/" + super.invokeAction(serviceId, actionId, validateOnly, inputs, model),
+                "partials/" + serviceAdapter.invokeAction(serviceId, actionId, validateOnly, inputs, model),
                 ".html", ".xml");
     }
 

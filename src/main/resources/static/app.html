@@ -84,7 +84,9 @@
                  <td>
                      <button
                          hx-get="{{$$href}}/actions/delete"
-                         success-template="template_hello_HelloWorldObject_delete"
+                         success-template="template_hello_HelloWorldObject_delete_prompt_success"
+                         error-template="template_hello_HelloWorldObject_delete_prompt_error"
+                         error-template-target="."
                          hx-target='footer' >Delete</button>
                  </td>
              </tr>
@@ -93,7 +95,10 @@
          </table>
     </article>
 </script>
-<script id="template_hello_HelloWorldObject_delete" type="x-tmpl-mustache">
+<script id="template_hello_HelloWorldObject_delete_prompt_error" type="x-tmpl-mustache">
+    Sorry Action not available
+</script>
+<script id="template_hello_HelloWorldObject_delete_prompt_success" type="x-tmpl-mustache">
     <dialog open>
       <article>
         <header>

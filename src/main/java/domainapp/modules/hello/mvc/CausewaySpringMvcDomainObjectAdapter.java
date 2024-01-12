@@ -12,17 +12,19 @@ import org.apache.causeway.core.metamodel.spec.feature.MixedIn;
 import org.apache.causeway.core.metamodel.spec.feature.ObjectAction;
 import org.apache.causeway.core.metamodel.spec.feature.ObjectAssociation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
 public class CausewaySpringMvcDomainObjectAdapter {
 
-    private final CausewaySpringMvcMetaModelAdapter adapter;
+    final CausewaySpringMvcMetaModelAdapter metaModelAdapter;
 
 
     // //////////////////////////////////////////////////////////
@@ -30,7 +32,7 @@ public class CausewaySpringMvcDomainObjectAdapter {
     // //////////////////////////////////////////////////////////
 
     public String object(@PathVariable String domainType, @PathVariable String instanceId, Model model) {
-        val found = adapter.getObject(domainType, instanceId);
+        val found = metaModelAdapter.getObject(domainType, instanceId);
         if (found.isPresent()) {
             val object = found.get();
             model.addAttribute("object", object);

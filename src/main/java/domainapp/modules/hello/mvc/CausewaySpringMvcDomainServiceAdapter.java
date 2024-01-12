@@ -8,6 +8,7 @@ import org.apache.causeway.applib.services.xactn.TransactionService;
 import org.apache.causeway.core.metamodel.interactions.managed.ActionInteraction;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Collection;
 import java.util.Collections;
 
+@Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Log4j2
 public class CausewaySpringMvcDomainServiceAdapter {

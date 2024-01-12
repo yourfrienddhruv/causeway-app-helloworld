@@ -33,7 +33,7 @@
            th:value="${bindingResult?.getFieldError(action?.id)?.getDefaultMessage()}"
            class="textarea textarea-error"/>
     <form method="POST"
-          th:action="${'/web/services/' + action.owner.logicalTypeName + '/actions/' + action.id + '/invoke.htmx'}">
+          th:action="${'/web/services/' + action.owner.logicalTypeName + '/actions/' + action.id + '/invoke'}">
         <div th:each="p: ${action.getMetaModel().getParameters()}">
             <label class="label">
                 <span th:text="${p.getCanonicalFriendlyName()}" class="label-text">Property</span>
@@ -62,7 +62,7 @@
     Action result List
     <hr>
     <li th:each="p : ${actionResult.actionReturnedObject.pojo}">
-        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p) + '.htmx'}"
+        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p)}"
            th:text="${p}"/>
     </li>
 </div>
@@ -77,5 +77,8 @@
     Action result Empty
     <hr>
     <div th:text="${actionResult.actionReturnedObject}"></div>
+</div>
+<div th:fragment="action-unavailable">
+    Action Unavailable
 </div>
 </html>

@@ -29,6 +29,7 @@ import org.apache.causeway.core.metamodel.spec.feature.ObjectAction;
 import org.apache.causeway.viewer.commons.applib.services.branding.BrandingUiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
@@ -239,18 +240,29 @@ public class CausewaySpringMvcMetaModelAdapter {
 
     private final BrandingUiService brandingUiService;
 
-    public String getApplicationName() {
+
+    public String fullPageResponse(String layoutTemplate, Model model, String partialTemplate) {
+        model.addAttribute("applicationName", getApplicationName());
+        model.addAttribute("applicationLogo", getApplicationLogo());
+        model.addAttribute("menuBarPrimary", getMenuBar(DomainServiceLayout.MenuBar.PRIMARY));
+        model.addAttribute("menuBarSecondary", getMenuBar(DomainServiceLayout.MenuBar.SECONDARY));
+        model.addAttribute("menuBarTertiary", getMenuBar(DomainServiceLayout.MenuBar.TERTIARY));
+
+        model.addAttribute("partial", partialTemplate);
+        return layoutTemplate;
+    }
+    String getApplicationName() {
         return brandingUiService.getHeaderBranding().getName().orElse("App");
     }
 
-    public String getApplicationLogo() {
+    String getApplicationLogo() {
         return '/' + brandingUiService.getHeaderBranding().getLogoHref().orElse("images/favicon.png");
     }
 
 
     private final MenuBarsService menuBarsService;
 
-    public LinkedHashMap<BSMenu,
+    LinkedHashMap<BSMenu,
             LinkedHashMap<BSMenuSection,
                     LinkedHashMap<ServiceActionLayoutData, ManagedAction>>> getMenuBar(
             DomainServiceLayout.MenuBar menuBarType) {
@@ -263,7 +275,7 @@ public class CausewaySpringMvcMetaModelAdapter {
         }
     }
 
-    private LinkedHashMap<BSMenu,
+    LinkedHashMap<BSMenu,
             LinkedHashMap<BSMenuSection,
                     LinkedHashMap<ServiceActionLayoutData, ManagedAction>>> getMenus(BSMenuBar bsMenuBar) {
         val menuBar = new LinkedHashMap<BSMenu,

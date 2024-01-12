@@ -24,6 +24,7 @@ import java.util.Collections;
 public class CausewaySpringMvcDomainServiceAdapter {
 
     final CausewaySpringMvcMetaModelAdapter metaModelAdapter;
+    final CausewaySpringMvcDomainObjectAdapter objectAdapter;
     final TransactionService transactionService;
     final BookmarkService bookmarkService;
 
@@ -124,7 +125,9 @@ public class CausewaySpringMvcDomainServiceAdapter {
                 } else if (actionResult.getActionReturnedObject().getPojo() instanceof Collection) {
                     return "services :: actionResultList";
                 } else {
-                    return "services :: actionResultObject";
+                    var domainType = actionResult.getActionReturnedObject().getLogicalTypeName();
+                    var instanceId = actionResult.getActionReturnedObject().getBookmarkElseFail().getIdentifier();
+                    return objectAdapter.object(domainType, instanceId, model);
                 }
             }
         } catch (Exception executionException) {

@@ -202,7 +202,7 @@ public class CausewaySpringMvcDomainObjectAdapter {
                 } else if (actionResult.getActionReturnedObject().getPojo() instanceof Collection) {
                     return "objects :: actionResultList";
                 } else {
-                    return "objects :: actionResultObject";
+                    return object(domainType, instanceId, model);
                 }
             }
         } catch (Exception executionException) {

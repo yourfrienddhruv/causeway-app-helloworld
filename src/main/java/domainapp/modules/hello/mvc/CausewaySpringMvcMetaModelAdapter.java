@@ -75,17 +75,17 @@ public class CausewaySpringMvcMetaModelAdapter {
     }
 
     // //////////////////////////////////////////////////////////
-    // domain service action
+    // action
     // //////////////////////////////////////////////////////////
 
-    public ActionInteraction getActionInteraction(@NotNull ManagedObject serviceAction, @NotNull String actionId) {
-        return ActionInteraction.start(serviceAction, actionId, Where.OBJECT_FORMS).checkVisibility()
+    public ActionInteraction getActionInteraction(@NotNull ManagedObject owner, @NotNull String actionId) {
+        return ActionInteraction.start(owner, actionId, Where.OBJECT_FORMS).checkVisibility()
                 .checkUsability(MemberInteraction.AccessIntent.ACCESS).
                 checkSemanticConstraint(ActionInteraction.SemanticConstraint.NONE);
     }
 
     // //////////////////////////////////////////////////////////
-    // domain service action invoke
+    // action invoke
     // //////////////////////////////////////////////////////////
 
     public ActionInteraction.Result invokeAction(

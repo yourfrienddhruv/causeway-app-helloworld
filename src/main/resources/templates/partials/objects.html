@@ -2,9 +2,29 @@
 <div th:fragment="object">
     Single object
     <hr>
-    <div th:text="${object.logicalTypeName}">logicalTypeName</div>
+    <div th:text="${object.specification.singularName}">name</div>
     <hr>
-    Properties
+    Actions:
+    <div>
+        <table>
+            <tr th:each="a: ${topBarActions}">
+                <td>
+                    <a th:if="${a.parameterCount==0 && a.semantics.safeInNature}"
+                       th:attr="hx-get='/web/objects/'+ ${object.logicalTypeName} + '/' + ${object.getBookmarkElseFail().getIdentifier()} + '/actions/' + ${a.id} + '/invoke'"
+                       hx-target="main"
+                       href=""
+                       th:text="${a.canonicalFriendlyName}"></a>
+
+                    <a th:unless="${a.parameterCount==0 && a.semantics.safeInNature}"
+                       th:attr="hx-get='/web/objects/'+ ${object.logicalTypeName} + '/' + ${object.getBookmarkElseFail().getIdentifier()} + '/actions/' + ${a.id} "
+                       hx-target="main"
+                       href=""
+                       th:text="${a.canonicalFriendlyName}"></a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    Properties:
     <div th:each="pg: ${propertyGroups}">
         <div th:text="${pg.key}"></div>
         <table>
@@ -19,7 +39,7 @@
         </table>
     </div>
     <hr>
-    Collections
+    Collections:
     <div th:each="cs: ${collections}">
         <div th:text="${cs.key}"></div>
         <table th:each="elements: ${cs.value}">
@@ -33,4 +53,69 @@
     <hr>
 </div>
 <hr>
+<div th:fragment="action">
+    Action
+    <hr>
+    <input type="textarea" aria-invalid="true"
+           th:if="${bindingResult?.getFieldError(action?.id)}"
+           th:value="${bindingResult?.getFieldError(action?.id)?.getDefaultMessage()}"
+           class="textarea textarea-error"/>
+    <form method="POST"
+          th:action="${'/web/objects/' + action.owner.logicalTypeName + '/' + action.owner.getBookmarkElseFail().getIdentifier() + '/actions/' + action.id + '/invoke'}">
+        <div th:each="p: ${action.getMetaModel().getParameters()}">
+            <label class="label">
+                <span th:text="${p.getCanonicalFriendlyName()}" class="label-text">Property</span>
+            </label>
+            <input th:name="${p.id}" class="input input-bordered w-full max-w-xs"/>
+            <div th:if="${bindingResult?.getFieldError(p.getCanonicalFriendlyName())}"
+                 aria-invalid="true" role="alert" class="alert alert-error shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">Error</h3>
+                    <div th:value="${bindingResult?.getFieldError(p.getCanonicalFriendlyName())?.getDefaultMessage()}"
+                         class="text-xs">Error msg
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="submit" th:value="${action.getFriendlyName()}" class="btn btn-primary">
+    </form>
+</div>
+<hr>
+<div th:fragment="actionResultList">
+    Action result List
+    <hr>
+    <li th:each="p : ${actionResult.actionReturnedObject.pojo}">
+        <a th:href="${@causewaySpringMvcMetaModelAdapter.getBookmarkAsUrl(p)}"
+           th:text="${p}"/>
+    </li>
+</div>
+<hr>
+<div th:fragment="actionResultObject">
+    Action result Object
+    <hr>
+    <div th:text="${actionResult.actionReturnedObject.pojo}"></div>
+</div>
+<hr>
+<div th:fragment="actionResultEmpty">
+    Action result Empty
+    <hr>
+    <div th:text="${actionResult.actionReturnedObject}"></div>
+</div>
+<hr>
+<div th:fragment="action-unavailable">
+    Action Unavailable
+</div>
+<hr>
+<div th:fragment="object-not-found">
+    Requested <span th:text="${object.specification.singularName}"></span> does not exists
+</div>
+<hr>
+<div th:fragment="object-type-not-found">
+    No Such Object Found
+</div>
 </html>
